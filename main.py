@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 match args.mode:
     case "send":
-        sender = Sender("./sample")
+        sender = Sender("./test_data/sample")
         sender.play()
     case "receive":
         print("You tried receiving... but nothing happened yet.")
