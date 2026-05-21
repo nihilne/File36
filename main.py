@@ -1,7 +1,7 @@
 import sys
 import argparse
 import logging
-from sender import Sender, Speed
+from utils.sender import Sender, Speed
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
