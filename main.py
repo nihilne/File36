@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 match args.mode:
     case "send":
-        sender = Sender("./sample", volume=0.8, speed=Speed.ULTRAFAST)
+        sender = Sender("./sample", volume=0.8, speed=Speed.HYPERFAST)
         sender.play()
     case "receive":
         print("Receive")
