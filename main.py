@@ -1,7 +1,7 @@
 import sys
 import argparse
 import logging
-from utils.sender import Sender, Speed
+from utils.sender import Sender
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -9,7 +9,7 @@ root.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter(
-    "[%(asctime)s] [%(levelname)s] %(name)s - %(message)s",
+    "[%(asctime)s] [%(levelname)s] %(message)s",
     "%d-%m-%Y %H:%M:%S",
 )
 handler.setFormatter(formatter)
@@ -21,9 +21,10 @@ args = parser.parse_args()
 
 match args.mode:
     case "send":
-        sender = Sender("./sample", volume=0.8, speed=Speed.HYPERFAST)
+        sender = Sender("./sample")
         sender.play()
     case "receive":
-        print("Receive")
+        print("You tried receiving... but nothing happened yet.")
     case _:
-        print("Nothing")
+        print("Invalid mode. Try `send` or `receive`.")
+        exit()

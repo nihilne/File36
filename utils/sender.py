@@ -2,18 +2,10 @@ import logging
 import numpy as np
 import sounddevice as sd
 from pathlib import Path
-from enum import Enum
 from typing import Annotated
 
-
-class Speed(Enum):
-    SLOW = 500
-    MEDIUM = 300
-    FAST = 200
-    SUPERFAST = 100
-    ULTRAFAST = 50
-    HYPERFAST = 10
-    ULTRAKILL = 5
+from config import DEFAULT_SPEED, DEFAULT_VOLUME
+from core.enums import Speed
 
 
 class Sender:
@@ -25,8 +17,8 @@ class Sender:
     def __init__(
         self,
         file_path: str,
-        speed: Speed = Speed.MEDIUM,
-        volume: Annotated[float, "0.0 to 1.0"] = 0.1,
+        speed: Speed = DEFAULT_SPEED,
+        volume: Annotated[float, "0.0 to 1.0"] = DEFAULT_VOLUME,
     ):
         self.file_path = Path(file_path)
         self.speed = speed
