@@ -1,4 +1,5 @@
 import logging
+import wave
 import numpy as np
 import sounddevice as sd
 import matplotlib
@@ -15,8 +16,8 @@ matplotlib.use("Qt5Agg")
 class Sender:
     SAMPLE_RATE = 44100
     FREQ_ZERO = 1200
-    FREQ_ONE = 2200
-    FREQ_SYNC = 1700
+    FREQ_ONE = 2300
+    FREQ_SYNC = 1800
     EOT = b"\x04"
 
     def __init__(
@@ -143,3 +144,16 @@ class Sender:
         plt.ylabel("Amplitude")
         plt.tight_layout()
         plt.show()
+
+    def export_wav(self, output_path: str):
+        """Builds the transmission waveform and exports it as a WAV file."""
+        audio = self.build()
+        pcm_audio = np.int16(audio * 32767)
+
+        with wave.open(output_path, "wb") as wav_file:
+            wav_file.setnchannels(1)  # mono
+            wav_file.setsampwidth(2)  # 16-bit audio
+            wav_file.setframerate(self.SAMPLE_RATE)
+            wav_file.writeframes(pcm_audio.tobytes())
+
+        logging.info(f"WAV exported to {output_path}")

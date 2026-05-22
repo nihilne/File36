@@ -28,6 +28,7 @@ match args.mode:
     case "test-run":
         sender = Sender(Mode.TEXT, "TEST_DATA 123!@")
         sender.play()
+        sender.export_wav("./output.wav")
     case _:
         print("Invalid mode. Try `send`, `receive`, or `test-run`.")
         exit()
