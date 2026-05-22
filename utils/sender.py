@@ -1,11 +1,15 @@
 import logging
 import numpy as np
 import sounddevice as sd
+import matplotlib
+import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Annotated
 
 from config import DEFAULT_SPEED, DEFAULT_VOLUME
 from core.enums import Speed, Mode
+
+matplotlib.use("Qt5Agg")
 
 
 class Sender:
@@ -26,7 +30,7 @@ class Sender:
             self.data = data.encode()
         elif mode == Mode.FILE and isinstance(data, str):
             self.file_path = Path(data)
-            self.data = self.read_bytes()
+            self.data = self._read_bytes()
         elif mode == Mode.RAW and isinstance(data, bytes):
             self.data = data
         else:
@@ -35,7 +39,7 @@ class Sender:
         self.speed = speed
         self.volume = volume
 
-    def read_bytes(self):
+    def _read_bytes(self):
         """Reads raw bytes of the object's file_path property"""
         with self.file_path.open("rb") as file:
             return file.read()
@@ -94,6 +98,7 @@ class Sender:
         return self.encode(self.EOT)
 
     def encode(self, data: bytes):
+        """Encodes bytes to a tone sequence"""
         bits = self._to_bits(data)
         sequence = []
         for bit in bits:
@@ -103,8 +108,9 @@ class Sender:
 
         return self.sequence(sequence)
 
-    def play(self):
-        all = np.concatenate(
+    def build(self):
+        """Builds and returns the full transmission waveform."""
+        return np.concatenate(
             [
                 self.padding(),
                 self.header(),
@@ -114,10 +120,26 @@ class Sender:
                 self.padding(),
             ]
         )
-        sd.play(all, self.SAMPLE_RATE)
+
+    def play(self):
+        audio = self.build()
+        sd.play(audio, self.SAMPLE_RATE)
         bps = 1000 / self.speed.value
         logging.info(
-            f"Playing header + data ({len(all) / self.SAMPLE_RATE:.2f}s total @ {bps:.0f}bits/s or {bps / 8:.0f}bytes/s)"
+            f"Playing header + data ({len(audio) / self.SAMPLE_RATE:.2f}s total @ {bps:.0f}bits/s or {bps / 8:.0f}bytes/s)"
         )
         sd.wait()
         logging.info("Done!")
+
+    def visualize(self):
+        waveform = self.build()
+        time = np.linspace(0, len(waveform) / self.SAMPLE_RATE, len(waveform))
+
+        samples = int(self.SAMPLE_RATE * 0.2)
+        plt.figure(figsize=(12, 4))
+        plt.plot(time[:samples], waveform[:samples], linewidth=0.5)
+        plt.title("Transmission Waveform")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.tight_layout()
+        plt.show()
