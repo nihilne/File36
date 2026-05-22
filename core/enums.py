@@ -9,3 +9,9 @@ class Speed(Enum):
     ULTRAFAST = 50
     HYPERFAST = 10
     ULTRAKILL = 5
+
+
+class Mode(Enum):
+    TEXT = 1
+    FILE = 2
+    RAW = 3

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated
 
 from config import DEFAULT_SPEED, DEFAULT_VOLUME
-from core.enums import Speed
+from core.enums import Speed, Mode
 
 
 class Sender:
@@ -13,26 +13,38 @@ class Sender:
     FREQ_ZERO = 1200
     FREQ_ONE = 2200
     FREQ_SYNC = 1700
+    EOT = b"\x04"
 
     def __init__(
         self,
-        file_path: str,
+        mode: Mode,
+        data: str | bytes,
         speed: Speed = DEFAULT_SPEED,
         volume: Annotated[float, "0.0 to 1.0"] = DEFAULT_VOLUME,
     ):
-        self.file_path = Path(file_path)
+        if mode == Mode.TEXT and isinstance(data, str):
+            self.data = data.encode()
+        elif mode == Mode.FILE and isinstance(data, str):
+            self.file_path = Path(data)
+            self.data = self.read_bytes()
+        elif mode == Mode.RAW and isinstance(data, bytes):
+            self.data = data
+        else:
+            raise ValueError(f"Invalid combination of {mode} and type {type(data)}")
+
         self.speed = speed
         self.volume = volume
 
     def read_bytes(self):
-        """Reads raw bytes of the file speficied."""
+        """Reads raw bytes of the object's file_path property"""
         with self.file_path.open("rb") as file:
             return file.read()
 
-    def to_bits(self, data: bytes):
+    def _to_bits(self, data: bytes):
+        """Converts bytes to a list of bits (MSB)"""
         bits = []
         for byte in data:
-            for i in range(7, -1, -1):  # MSB for some reason
+            for i in range(7, -1, -1):
                 bits.append((byte >> i) & 1)
         return bits
 
@@ -56,25 +68,33 @@ class Sender:
         return np.concatenate(parts)
 
     def padding(self):
+        """
+        Returns a sequence of tones that acts as padding.
+        Used before and after transmission
+        """
         tones = [
             (600, 50),
-            (0, 50),
+            (0, 10),
             (600, 50),
             (700, 200),
         ]
         return self.sequence(tones)
 
     def header(self):
+        """Returns a sequence that acts as the transmission start identifier"""
         tones = [
             (1900, 300),
-            (1200, 50),
+            (1200, 10),
             (1900, 300),
         ]
         return self.sequence(tones)
 
-    def encode(self):
-        data = self.read_bytes()
-        bits = self.to_bits(data)
+    def eot(self):
+        """Returns an End Of Transmission (EOT) byte"""
+        return self.encode(self.EOT)
+
+    def encode(self, data: bytes):
+        bits = self._to_bits(data)
         sequence = []
         for bit in bits:
             freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
@@ -89,7 +109,8 @@ class Sender:
                 self.padding(),
                 self.header(),
                 self.tone(self.FREQ_SYNC, self.speed.value * 2),
-                self.encode(),
+                self.encode(self.data),
+                self.eot(),
                 self.padding(),
             ]
         )

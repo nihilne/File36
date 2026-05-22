@@ -2,6 +2,7 @@ import sys
 import argparse
 import logging
 from utils.sender import Sender
+from core.enums import Mode
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -21,10 +22,12 @@ args = parser.parse_args()
 
 match args.mode:
     case "send":
-        sender = Sender("./test_data/sample")
-        sender.play()
+        print("You tried sending... but nothing happened yet.")
     case "receive":
         print("You tried receiving... but nothing happened yet.")
+    case "test-run":
+        sender = Sender(Mode.TEXT, "TEST_DATA 123!@")
+        sender.play()
     case _:
-        print("Invalid mode. Try `send` or `receive`.")
+        print("Invalid mode. Try `send`, `receive`, or `test-run`.")
         exit()
