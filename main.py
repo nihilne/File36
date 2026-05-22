@@ -2,7 +2,7 @@ import sys
 import argparse
 import logging
 from utils.sender import Sender
-from core.enums import Mode
+from core.enums import Mode, Speed
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -26,7 +26,7 @@ match args.mode:
     case "receive":
         print("You tried receiving... but nothing happened yet.")
     case "test-run":
-        sender = Sender(Mode.TEXT, "TEST_DATA 123!@")
+        sender = Sender(Mode.TEXT, "TEST_DATA 123!@", Speed.HYPERFAST)
         sender.play()
         sender.export_wav("./output.wav")
     case _:

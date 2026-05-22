@@ -14,7 +14,7 @@ matplotlib.use("Qt5Agg")
 
 
 class Sender:
-    SAMPLE_RATE = 44100
+    SAMPLE_RATE = 192000
     FREQ_ZERO = 1200
     FREQ_ONE = 2300
     FREQ_SYNC = 1800
