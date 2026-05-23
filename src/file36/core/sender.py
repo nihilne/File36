@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Annotated
 
-from config import DEFAULT_SPEED, DEFAULT_VOLUME
-from core.enums import Speed, Mode
+from file36.config import DEFAULT_SPEED, DEFAULT_VOLUME
+from file36.core.enums import Speed, Mode
 
 matplotlib.use("Qt5Agg")
 
@@ -23,13 +23,13 @@ class Sender:
     def __init__(
         self,
         mode: Mode,
-        data: str | bytes,
+        data: str | Path | bytes,
         speed: Speed = DEFAULT_SPEED,
         volume: Annotated[float, "0.0 to 1.0"] = DEFAULT_VOLUME,
     ):
         if mode == Mode.TEXT and isinstance(data, str):
             self.data = data.encode()
-        elif mode == Mode.FILE and isinstance(data, str):
+        elif mode == Mode.FILE and isinstance(data, Path):
             self.file_path = Path(data)
             self.data = self._read_bytes()
         elif mode == Mode.RAW and isinstance(data, bytes):

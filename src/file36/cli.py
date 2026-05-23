@@ -1,8 +1,8 @@
 import sys
 import argparse
 import logging
-from utils.sender import Sender
-from core.enums import Mode, Speed
+from file36.core.sender import Sender
+from file36.core.enums import Mode, Speed
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -22,22 +22,37 @@ parser = argparse.ArgumentParser(
     epilog="By NIHILNE",
 )
 
-parser.add_argument(
-    "-s",
-    "--send",
+mode = parser.add_mutually_exclusive_group(required=True)
+
+mode.add_argument(
+    "-t",
+    "--text-mode",
+    action="store_true",
+    help="Encodes and plays the specified text.",
+)
+
+mode.add_argument(
+    "-p",
+    "--path-mode",
+    action="store_true",
+    help="Encodes and plays a file from the specified path.",
+)
+
+mode.add_argument(
+    "-b",
+    "--byte-mode",
     action="store_true",
     help="Encodes input to audio and plays it.",
 )
 
-parser.add_argument(
+mode.add_argument(
     "-r",
     "--receive",
     action="store_true",
     help="Listens for encoded audio and shows results.",
 )
 
-parser.add_argument(
-    "-t",
+mode.add_argument(
     "--test",
     action="store_true",
     help="Plays test audio.",
@@ -54,10 +69,7 @@ options = parser.parse_args()
 if not any(vars(options).values()):
     parser.error("No options given.")
 
-if options.send and options.receive:
-    raise ValueError("Sending and receiving are mutually exclusive options.")
-
-if options.send or options.receive:
+if not options.test:
     raise RuntimeError("Feature not implemented yet. Please use -t or --test.")
 
 if options.test:
@@ -65,4 +77,4 @@ if options.test:
     sender.play()
 
     if options.save:
-        sender.export_wav("./")
+        sender.export_wav("./output.wav")
