@@ -171,14 +171,20 @@ class Sender:
 
     def visualize(self):
         waveform = self.build()
-        time = np.linspace(0, len(waveform) / self.SAMPLE_RATE, len(waveform))
-
-        samples = int(self.SAMPLE_RATE * 0.2)
         plt.figure(figsize=(12, 4))
-        plt.plot(time[:samples], waveform[:samples], linewidth=0.5)
-        plt.title("Transmission Waveform")
+        plt.specgram(
+            waveform,
+            Fs=self.SAMPLE_RATE,
+            cmap="inferno",
+            NFFT=4096,
+            noverlap=3072,
+            vmin=-80,
+        )
+        plt.ylim(0, 3500)
+        plt.title("Transmission Spectrogram")
         plt.xlabel("Time (s)")
-        plt.ylabel("Amplitude")
+        plt.ylabel("Frequency (Hz)")
+        plt.colorbar(label="Intensity (dB)")
         plt.tight_layout()
         plt.show()
 
