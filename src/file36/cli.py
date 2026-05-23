@@ -16,65 +16,68 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-parser = argparse.ArgumentParser(
-    prog="file36",
-    description="A file-transfer-over-sound utility.",
-    epilog="By NIHILNE",
-)
 
-mode = parser.add_mutually_exclusive_group(required=True)
+def main():
 
-mode.add_argument(
-    "-t",
-    "--text-mode",
-    action="store_true",
-    help="Encodes and plays the specified text.",
-)
+    parser = argparse.ArgumentParser(
+        prog="file36",
+        description="A file-transfer-over-sound utility.",
+        epilog="By NIHILNE",
+    )
 
-mode.add_argument(
-    "-p",
-    "--path-mode",
-    action="store_true",
-    help="Encodes and plays a file from the specified path.",
-)
+    mode = parser.add_mutually_exclusive_group(required=True)
 
-mode.add_argument(
-    "-b",
-    "--byte-mode",
-    action="store_true",
-    help="Encodes input to audio and plays it.",
-)
+    mode.add_argument(
+        "-t",
+        "--text-mode",
+        action="store_true",
+        help="Encodes and plays the specified text.",
+    )
 
-mode.add_argument(
-    "-r",
-    "--receive",
-    action="store_true",
-    help="Listens for encoded audio and shows results.",
-)
+    mode.add_argument(
+        "-p",
+        "--path-mode",
+        action="store_true",
+        help="Encodes and plays a file from the specified path.",
+    )
 
-mode.add_argument(
-    "--test",
-    action="store_true",
-    help="Plays test audio.",
-)
+    mode.add_argument(
+        "-b",
+        "--byte-mode",
+        action="store_true",
+        help="Encodes input to audio and plays it.",
+    )
 
-parser.add_argument(
-    "--save",
-    action="store_true",
-    help="Saves either the played audio or the received audio.",
-)
+    mode.add_argument(
+        "-r",
+        "--receive",
+        action="store_true",
+        help="Listens for encoded audio and shows results.",
+    )
 
-options = parser.parse_args()
+    mode.add_argument(
+        "--test",
+        action="store_true",
+        help="Plays test audio.",
+    )
 
-if not any(vars(options).values()):
-    parser.error("No options given.")
+    parser.add_argument(
+        "--save",
+        action="store_true",
+        help="Saves either the played audio or the received audio.",
+    )
 
-if not options.test:
-    raise RuntimeError("Feature not implemented yet. Please use -t or --test.")
+    options = parser.parse_args()
 
-if options.test:
-    sender = Sender(Mode.TEXT, "TEST_DATA 123!@", Speed.HYPERFAST)
-    sender.play()
+    if not any(vars(options).values()):
+        parser.error("No options given.")
 
-    if options.save:
-        sender.export_wav("./output.wav")
+    if not options.test:
+        raise RuntimeError("Feature not implemented yet. Please use -t or --test.")
+
+    if options.test:
+        sender = Sender(Mode.TEXT, "TEST_DATA 123!@", Speed.HYPERFAST)
+        sender.play()
+
+        if options.save:
+            sender.export_wav("./output.wav")

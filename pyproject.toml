@@ -1,0 +1,27 @@
+[project]
+name = "file36"
+version = "0.1.0"
+authors = [
+  { name="NIHILNE", email="chris@nihilne.com" },
+]
+description = "A file-transfer-over-audio utility, aka a slow modem."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.14"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "sounddevice",
+    "matplotlib",
+    "PyQt5"
+]
+
+[project.scripts]
+file36 = "file36.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/nihilne/File36"
+Issues = "https://github.com/nihilne/File36/issues"
