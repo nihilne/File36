@@ -136,16 +136,37 @@ class Sender:
                 self.eot(),
                 self.padding(),
             ]
-        )
+        ).astype(np.float32)
 
     def play(self):
         audio = self.build()
-        sd.play(audio, self.SAMPLE_RATE)
         bps = 1000 / self.speed.value
         logging.info(
-            f"Playing header + data ({len(audio) / self.SAMPLE_RATE:.2f}s total @ {bps:.0f}bits/s or {bps / 8:.0f}bytes/s)"
+            f"Playing header + data ({len(audio) / self.SAMPLE_RATE:.2f}s total @ "
+            f"{bps:.0f}bits/s or {bps / 8:.0f}bytes/s)"
         )
-        sd.wait()
+
+        position = 0
+
+        def callback(outdata, frames, time, status):
+            nonlocal position
+            if status:
+                print(status)
+            chunk = audio[position : position + frames]
+            outdata[: len(chunk), 0] = chunk
+            outdata[len(chunk) :] = 0
+            position += frames
+            if len(chunk) < frames:
+                raise sd.CallbackStop()
+
+        with sd.OutputStream(
+            samplerate=self.SAMPLE_RATE,
+            channels=1,
+            dtype="float32",
+            callback=callback,
+        ):
+            sd.sleep(int(len(audio) / self.SAMPLE_RATE * 1000))
+
         logging.info("Done!")
 
     def visualize(self):
