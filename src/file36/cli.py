@@ -1,8 +1,12 @@
 import sys
 import argparse
 import logging
+from argparse import Namespace
+
+from file36.config import DEFAULT_VOLUME, DEFAULT_SPEED
 from file36.core.sender import Sender
 from file36.core.enums import Mode, Speed
+from file36.core.types import volume_type, speed_type
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)
@@ -17,8 +21,19 @@ handler.setFormatter(formatter)
 root.addHandler(handler)
 
 
-def main():
+def mode_test(options: Namespace):
+    sender = Sender(Mode.TEXT, "TEST_DATA 123!@", options.speed, options.volume)
+    sender.play()
 
+    if options.save:
+        sender.export_wav("./output.wav")
+
+
+def mode_unimplemented(options: Namespace):
+    raise RuntimeError("Feature not implemented yet. Please use -t or --test.")
+
+
+def main():
     parser = argparse.ArgumentParser(
         prog="file36",
         description="A file-transfer-over-sound utility.",
@@ -30,34 +45,44 @@ def main():
     mode.add_argument(
         "-t",
         "--text-mode",
-        action="store_true",
+        action="store_const",
+        const=mode_unimplemented,
+        dest="func",
         help="Encodes and plays the specified text.",
     )
 
     mode.add_argument(
         "-p",
         "--path-mode",
-        action="store_true",
+        action="store_const",
+        const=mode_unimplemented,
+        dest="func",
         help="Encodes and plays a file from the specified path.",
     )
 
     mode.add_argument(
         "-b",
         "--byte-mode",
-        action="store_true",
+        action="store_const",
+        const=mode_unimplemented,
+        dest="func",
         help="Encodes input to audio and plays it.",
     )
 
     mode.add_argument(
         "-r",
         "--receive",
-        action="store_true",
+        action="store_const",
+        const=mode_unimplemented,
+        dest="func",
         help="Listens for encoded audio and shows results.",
     )
 
     mode.add_argument(
         "--test",
-        action="store_true",
+        action="store_const",
+        const=mode_test,
+        dest="func",
         help="Plays test audio.",
     )
 
@@ -67,17 +92,22 @@ def main():
         help="Saves either the played audio or the received audio.",
     )
 
-    options = parser.parse_args()
+    parser.add_argument(
+        "-v",
+        "--volume",
+        type=volume_type,
+        default=DEFAULT_VOLUME,
+        help="Sets the volume. Accepts values from 1 to 100.",
+    )
 
-    if not any(vars(options).values()):
-        parser.error("No options given.")
+    parser.add_argument(
+        "--speed",
+        type=speed_type,
+        default=DEFAULT_SPEED,
+        choices=list(Speed),
+        help="Sets the speed (or BPS) of the encoded audio.",
+    )
 
-    if not options.test:
-        raise RuntimeError("Feature not implemented yet. Please use -t or --test.")
+    args = parser.parse_args()
 
-    if options.test:
-        sender = Sender(Mode.TEXT, "TEST_DATA 123!@", Speed.HYPERFAST)
-        sender.play()
-
-        if options.save:
-            sender.export_wav("./output.wav")
+    args.func(args)

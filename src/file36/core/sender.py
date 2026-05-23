@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Annotated
 
-from file36.config import DEFAULT_SPEED, DEFAULT_VOLUME
 from file36.core.enums import Speed, Mode
 
 matplotlib.use("Qt5Agg")
@@ -24,8 +23,8 @@ class Sender:
         self,
         mode: Mode,
         data: str | Path | bytes,
-        speed: Speed = DEFAULT_SPEED,
-        volume: Annotated[float, "0.0 to 1.0"] = DEFAULT_VOLUME,
+        speed: Speed,
+        volume: Annotated[int, "1 to 100"],
     ):
         if mode == Mode.TEXT and isinstance(data, str):
             self.data = data.encode()
@@ -38,7 +37,8 @@ class Sender:
             raise ValueError(f"Invalid combination of {mode} and type {type(data)}")
 
         self.speed = speed
-        self.volume = volume
+        self.volume = volume / 100
+        self.mode = mode
 
     def _read_bytes(self):
         """Reads raw bytes of the object's file_path property"""
@@ -55,7 +55,7 @@ class Sender:
 
     def tone(self, freq: int, duration: int):
         """Generates a tone given a frequency and a duration in milliseconds."""
-        d = duration / 1000.0
+        d = duration / 1000
         t = np.linspace(0, d, int(self.SAMPLE_RATE * d), False)
         sine = np.sin(2 * np.pi * freq * t)
         return sine.astype(np.float32) * self.volume
@@ -75,13 +75,11 @@ class Sender:
     def padding(self):
         """
         Returns a sequence of tones that acts as padding.
-        Used before and after transmission
+        Used before and after transmission.
         """
         tones = [
-            (600, 50),
-            (0, 10),
-            (600, 50),
-            (700, 200),
+            (600, 150),
+            (700, 150),
         ]
         return self.sequence(tones)
 
@@ -91,6 +89,24 @@ class Sender:
             (1900, 300),
             (1200, 10),
             (1900, 300),
+        ]
+        return self.sequence(tones)
+
+    def mode_header(self):
+        """Returns a sequence that signifies the mode of encoded audio being transmitted"""
+        match self.mode:
+            case Mode.TEXT:
+                freq = (1500, 300)
+            case Mode.FILE:
+                freq = (2000, 300)
+            case Mode.RAW:
+                freq = (2500, 300)
+            case _:
+                freq = (250, 300)
+
+        tones = [
+            (500, 100),
+            freq,
         ]
         return self.sequence(tones)
 
@@ -115,7 +131,7 @@ class Sender:
             [
                 self.padding(),
                 self.header(),
-                self.tone(self.FREQ_SYNC, self.speed.value * 2),
+                self.mode_header(),
                 self.encode(self.data),
                 self.eot(),
                 self.padding(),
