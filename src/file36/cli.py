@@ -34,16 +34,6 @@ def main():
     # PLAY PARSER & OPTIONS
     play_parser = subparsers.add_parser("play", help="Encode and play audio.")
 
-    play_mode = play_parser.add_mutually_exclusive_group(required=True)
-    play_mode.add_argument(
-        "-t", "--text", metavar="TEXT", help="Encode and play a text string."
-    )
-    play_mode.add_argument(
-        "-f", "--file", metavar="PATH", help="Encode and play a file."
-    )
-    play_mode.add_argument(
-        "-b", "--bytes", metavar="HEX", help="Encode and play raw bytes (hex)."
-    )
     play_parser.add_argument(
         "--save", action="store_true", help="Export the audio as a WAV file."
     )
@@ -61,6 +51,23 @@ def main():
         type=speed_type,
         default=DEFAULT_SPEED,
         choices=[s.name for s in Speed],
+    )
+
+    # PLAY MODES
+    play_mode = play_parser.add_mutually_exclusive_group(required=True)
+
+    play_mode.add_argument(
+        "-d", "--demo", action="store_true", help="Plays demo audio."
+    )
+
+    play_mode.add_argument(
+        "-t", "--text", metavar="TEXT", help="Encode and play a text string."
+    )
+    play_mode.add_argument(
+        "-f", "--file", metavar="PATH", help="Encode and play a file."
+    )
+    play_mode.add_argument(
+        "-b", "--bytes", metavar="HEX", help="Encode and play raw bytes (hex)."
     )
 
     # RECEIVE PARSER & OPTIONS
@@ -81,11 +88,16 @@ def main():
 
 
 def mode_play(options: Namespace):
+    if options.demo:
+        sender = Sender(Mode.TEXT, "TEST_DATA 123!@", options.speed, options.volume)
+
     if options.text:
         sender = Sender(Mode.TEXT, options.text, options.speed, options.volume)
-    elif options.file:
+
+    if options.file:
         sender = Sender(Mode.FILE, options.file, options.speed, options.volume)
-    elif options.bytes:
+
+    if options.bytes:
         sender = Sender(
             Mode.RAW, bytes.fromhex(options.bytes), options.speed, options.volume
         )
