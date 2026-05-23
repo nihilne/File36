@@ -13,7 +13,7 @@ file36 <command> [options]
 **play** - Encode some input and play audio
 
 ```
-file36 play [-t|-f|-b] <input> [--visualize] [--volume INTEGER] [--speed TEXT] [--save]
+file36 play [-t|-f|-b|-d] <input> [--visualize] [--volume INTEGER] [--speed TEXT] [--save]
 ```
 
 | Flag | Description |
@@ -21,6 +21,7 @@ file36 play [-t|-f|-b] <input> [--visualize] [--volume INTEGER] [--speed TEXT] [
 | `-t`, `--text` | Encode and play a text string |
 | `-f`, `--file` | Encode and play a file from the specified file path |
 | `-b`, `--bytes` | Encode and play raw bytes (input hex) |
+| `-d`, `--demo` | Encode and play demo data ("TEST_DATA 123!@") |
 | `--visualize` | Show a spectrogram alongside audio playback |
 | `-v`, `--volume` | Volume from 1 to 100 (default: 5 to avoid hearing damage) |
 | `--speed` | Transmission speed (`SLOW`, `FAST`, etc.) |
@@ -41,7 +42,8 @@ file36 receive [--save]
 ```
 file36 play -t "hello, modem"
 file36 play -f ./top-secret.txt --visualize
-file36 play -b deadbeef --volume 80 --speed FAST --save
-file36 receive # WIP
-file36 receive --save # WIP
+file36 play -b deadbeef --volume 80 --speed FAST
+file36 play -d --save
+file36 receive
+file36 receive --save
 ```
