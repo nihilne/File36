@@ -57,7 +57,10 @@ def main():
     play_mode = play_parser.add_mutually_exclusive_group(required=True)
 
     play_mode.add_argument(
-        "-d", "--demo", action="store_true", help="Plays demo audio."
+        "-d",
+        "--demo",
+        action="store_true",
+        help="Encode and play demo data.",
     )
 
     play_mode.add_argument(
