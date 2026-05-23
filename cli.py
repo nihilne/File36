@@ -16,19 +16,53 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-parser = argparse.ArgumentParser(description="File36")
-parser.add_argument("mode", help="Whether to send or receive")
-args = parser.parse_args()
+parser = argparse.ArgumentParser(
+    prog="file36",
+    description="A file-transfer-over-sound utility.",
+    epilog="By NIHILNE",
+)
 
-match args.mode:
-    case "send":
-        print("You tried sending... but nothing happened yet.")
-    case "receive":
-        print("You tried receiving... but nothing happened yet.")
-    case "test-run":
-        sender = Sender(Mode.TEXT, "TEST_DATA 123!@", Speed.HYPERFAST)
-        sender.play()
-        sender.export_wav("./output.wav")
-    case _:
-        print("Invalid mode. Try `send`, `receive`, or `test-run`.")
-        exit()
+parser.add_argument(
+    "-s",
+    "--send",
+    action="store_true",
+    help="Encodes input to audio and plays it.",
+)
+
+parser.add_argument(
+    "-r",
+    "--receive",
+    action="store_true",
+    help="Listens for encoded audio and shows results.",
+)
+
+parser.add_argument(
+    "-t",
+    "--test",
+    action="store_true",
+    help="Plays test audio.",
+)
+
+parser.add_argument(
+    "--save",
+    action="store_true",
+    help="Saves either the played audio or the received audio.",
+)
+
+options = parser.parse_args()
+
+if not any(vars(options).values()):
+    parser.error("No options given.")
+
+if options.send and options.receive:
+    raise ValueError("Sending and receiving are mutually exclusive options.")
+
+if options.send or options.receive:
+    raise RuntimeError("Feature not implemented yet. Please use -t or --test.")
+
+if options.test:
+    sender = Sender(Mode.TEXT, "TEST_DATA 123!@", Speed.HYPERFAST)
+    sender.play()
+
+    if options.save:
+        sender.export_wav("./")
