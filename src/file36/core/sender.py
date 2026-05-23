@@ -96,16 +96,16 @@ class Sender:
         """Returns a sequence that signifies the mode of encoded audio being transmitted"""
         match self.mode:
             case Mode.TEXT:
-                freq = (1500, 300)
+                freq = (1500, 150)
             case Mode.FILE:
-                freq = (2000, 300)
+                freq = (2000, 150)
             case Mode.RAW:
-                freq = (2500, 300)
+                freq = (2500, 150)
             case _:
-                freq = (250, 300)
+                freq = (250, 150)
 
         tones = [
-            (500, 100),
+            (500, 150),
             freq,
         ]
         return self.sequence(tones)
