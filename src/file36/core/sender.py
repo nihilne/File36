@@ -28,7 +28,7 @@ class Sender:
     ):
         if mode == Mode.TEXT and isinstance(data, str):
             self.data = data.encode()
-        elif mode == Mode.FILE and isinstance(data, Path):
+        elif mode == Mode.FILE and isinstance(data, str):
             self.file_path = Path(data)
             self.data = self._read_bytes()
         elif mode == Mode.RAW and isinstance(data, bytes):
