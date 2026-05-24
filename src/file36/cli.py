@@ -50,7 +50,7 @@ def main():
         "--speed",
         type=speed_type,
         default=DEFAULT_SPEED,
-        choices=[s.name for s in Speed],
+        choices=list(Speed),
     )
 
     # PLAY MODES
