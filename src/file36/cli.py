@@ -5,7 +5,7 @@ import threading
 from argparse import Namespace
 
 from file36.config import DEFAULT_VOLUME, DEFAULT_SPEED
-from file36.core.sender import Sender
+from file36.core.player import Player
 from file36.core.enums import Mode, Speed
 from file36.core.types import volume_type, speed_type
 
@@ -92,29 +92,29 @@ def main():
 
 def mode_play(options: Namespace):
     if options.demo:
-        sender = Sender(Mode.TEXT, "TEST_DATA 123!@", options.speed, options.volume)
+        player = Player(Mode.TEXT, "TEST_DATA 123!@", options.speed, options.volume)
 
     if options.text:
-        sender = Sender(Mode.TEXT, options.text, options.speed, options.volume)
+        player = Player(Mode.TEXT, options.text, options.speed, options.volume)
 
     if options.file:
-        sender = Sender(Mode.FILE, options.file, options.speed, options.volume)
+        player = Player(Mode.FILE, options.file, options.speed, options.volume)
 
     if options.bytes:
-        sender = Sender(
+        player = Player(
             Mode.RAW, bytes.fromhex(options.bytes), options.speed, options.volume
         )
 
     if options.visualize:
-        play_thread = threading.Thread(target=sender.play)
+        play_thread = threading.Thread(target=player.play)
         play_thread.start()
-        sender.visualize()
+        player.visualize()
         play_thread.join()
     else:
-        sender.play()
+        player.play()
 
     if options.save:
-        sender.export_wav("./output.wav")
+        player.export_wav("./output.wav")
 
 
 def mode_receive(options: Namespace):

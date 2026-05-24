@@ -12,7 +12,7 @@ from file36.core.enums import Speed, Mode
 matplotlib.use("Qt5Agg")
 
 
-class Sender:
+class Player:
     SAMPLE_RATE = 192000
     FREQ_ZERO = 1200
     FREQ_ONE = 2300
