@@ -82,7 +82,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "play":
+    if args.command == "send":
         mode_send(args)
     elif args.command == "receive":
         mode_receive(args)
