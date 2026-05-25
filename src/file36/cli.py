@@ -33,7 +33,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # PLAY PARSER & OPTIONS
-    send_parser = subparsers.add_parser("play", help="Encode and play audio.")
+    send_parser = subparsers.add_parser("send", help="Encode and play audio.")
 
     send_parser.add_argument(
         "--save", action="store_true", help="Export the audio as a WAV file."
@@ -111,5 +111,4 @@ def mode_send(options: Namespace):
 
 
 def mode_receive(options: Namespace):
-    raise RuntimeError("Not implemented yet.")
-    # Receiver(DEFAULT_SPEED).receive()
+    Receiver(DEFAULT_SPEED).receive()
