@@ -139,6 +139,7 @@ class Player:
         ).astype(np.float32)
 
     def play(self):
+        """Plays audio using sd.OutputStream()"""
         audio = self.build()
         bps = 1000 / self.speed.value
         logging.info(
@@ -170,6 +171,7 @@ class Player:
         logging.info("Done!")
 
     def visualize(self):
+        """Builds the transmission waveform and shows a spectrogram of it."""
         waveform = self.build()
         plt.figure(figsize=(12, 4))
         plt.specgram(
