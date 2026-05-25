@@ -148,18 +148,19 @@ class Player:
             f"Playing header + data ({len(audio) / self.SAMPLE_RATE:.2f}s total @ "
             f"{bps:.0f}bits/s or {bps / 8:.0f}bytes/s)"
         )
-
         position = 0
+        done = threading.Event()
 
         def callback(outdata, frames, time, status):
             nonlocal position
             if status:
-                print(status)
+                logging.warning(f"Stream status: {status}")
             chunk = audio[position : position + frames]
             outdata[: len(chunk), 0] = chunk
             outdata[len(chunk) :] = 0
             position += frames
             if len(chunk) < frames:
+                done.set()
                 raise sd.CallbackStop()
 
         with sd.OutputStream(
@@ -168,7 +169,7 @@ class Player:
             dtype="float32",
             callback=callback,
         ):
-            sd.sleep(int(len(audio) / self.SAMPLE_RATE * 1000))
+            done.wait()
 
         logging.info("Done!")
 
