@@ -12,6 +12,7 @@ class Speed(Enum):
     ULTRAFAST = 50
     HYPERFAST = 10
     ULTRAKILL = 5
+    LIMIT = 2
 
 
 class Mode(Enum):
