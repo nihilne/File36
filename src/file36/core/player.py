@@ -80,7 +80,8 @@ class Player:
 
     def encode(self, data: bytes):
         """Encodes bytes to a tone sequence."""
-        bits = self._to_bits(data)
+        encoded = self.rsc.encode(data)
+        bits = self._to_bits(bytes(encoded))
         sequence = []
         for bit in bits:
             freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
