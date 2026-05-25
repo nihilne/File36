@@ -14,8 +14,6 @@ from file36.core.enums import Mode, Speed
 
 matplotlib.use("Qt5Agg")
 
-rsc = RSCodec()
-
 
 class Player:
     SAMPLE_RATE = 192000
@@ -30,6 +28,7 @@ class Player:
         data: str | Path | bytes,
         speed: Speed,
         volume: Annotated[int, "1 to 100"],
+        ecc_bytes: int = 10,
     ):
         if mode == Mode.TEXT and isinstance(data, str):
             self.data = data.encode()
@@ -44,6 +43,7 @@ class Player:
         self.speed = speed
         self.volume = volume / 100
         self.mode = mode
+        self.rsc = RSCodec(ecc_bytes)
 
     @staticmethod
     def _to_bits(data: bytes) -> list[int]:
