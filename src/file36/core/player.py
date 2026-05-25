@@ -28,7 +28,7 @@ class Player:
         data: str | Path | bytes,
         speed: Speed,
         volume: Annotated[int, "1 to 100"],
-        ecc_bytes: int = 10,
+        ecc_bytes: int = 2,
     ):
         if mode == Mode.TEXT and isinstance(data, str):
             self.data = data.encode()
@@ -80,15 +80,18 @@ class Player:
 
     def encode(self, data: bytes):
         """Encodes bytes to a tone sequence."""
-        encoded = self.rsc.encode(data)
-        bits = self._to_bits(bytes(encoded))
-        sequence = []
-        for bit in bits:
-            freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
-            sequence.append((freq, self.speed.value))
-            sequence.append((self.FREQ_SYNC, self.speed.value))
-
-        return self._construct_sequence(sequence)
+        parts = []
+        for byte in data:
+            block = bytes(self.rsc.encode(bytes([byte])))
+            bits = self._to_bits(block)
+            sequence = []
+            for bit in bits:
+                freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
+                sequence.append((freq, self.speed.value))
+                sequence.append((self.FREQ_SYNC, self.speed.value))
+            parts.append(self._construct_sequence(sequence))
+        print(parts)
+        return np.concatenate(parts)
 
     def padding(self):
         """
@@ -128,10 +131,6 @@ class Player:
         ]
         return self._construct_sequence(tones)
 
-    def eot(self):
-        """Returns an End Of Transmission (EOT) byte."""
-        return self.encode(self.EOT)
-
     def build(self):
         """Builds and returns the full transmission waveform."""
         return np.concatenate(
@@ -139,8 +138,7 @@ class Player:
                 self.padding(),
                 self.header(),
                 self.mode_header(),
-                self.encode(self.data),
-                self.eot(),
+                self.encode(self.data + self.EOT),
                 self.padding(),
             ]
         ).astype(np.float32)
