@@ -1,13 +1,13 @@
-import sys
 import argparse
 import logging
+import sys
 import threading
 from argparse import Namespace
 
-from file36.config import DEFAULT_VOLUME, DEFAULT_SPEED
-from file36.core.player import Player
+from file36.config import DEFAULT_SPEED, DEFAULT_VOLUME
 from file36.core.enums import Mode, Speed
-from file36.core.types import volume_type, speed_type
+from file36.core.player import Player
+from file36.core.types import speed_type, volume_type
 
 root = logging.getLogger()
 root.setLevel(logging.INFO)

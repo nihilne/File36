@@ -1,13 +1,15 @@
 import logging
+import threading
 import wave
-import numpy as np
-import sounddevice as sd
-import matplotlib
-import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Annotated
 
-from file36.core.enums import Speed, Mode
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import sounddevice as sd
+
+from file36.core.enums import Mode, Speed
 
 matplotlib.use("Qt5Agg")
 
