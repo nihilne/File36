@@ -15,7 +15,7 @@ from file36.core.enums import Mode, Speed
 matplotlib.use("Qt5Agg")
 
 
-class Player:
+class Sender:
     SAMPLE_RATE = 192000
     FREQ_ZERO = 1200
     FREQ_ONE = 2300
@@ -29,6 +29,7 @@ class Player:
         speed: Speed,
         volume: Annotated[int, "1 to 100"],
         ecc_bytes: int = 2,
+        block_ecc_bytes: int = 32,
     ):
         if mode == Mode.TEXT and isinstance(data, str):
             self.data = data.encode()
@@ -44,6 +45,7 @@ class Player:
         self.volume = volume / 100
         self.mode = mode
         self.rsc = RSCodec(ecc_bytes)
+        self.rsc_block = RSCodec(block_ecc_bytes)
 
     @staticmethod
     def _to_bits(data: bytes) -> list[int]:
@@ -80,18 +82,20 @@ class Player:
 
     def encode(self, data: bytes):
         """Encodes bytes to a tone sequence."""
-        parts = []
-        for byte in data:
-            block = bytes(self.rsc.encode(bytes([byte])))
-            bits = self._to_bits(block)
-            sequence = []
-            for bit in bits:
-                freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
-                sequence.append((freq, self.speed.value))
-                sequence.append((self.FREQ_SYNC, self.speed.value))
-            parts.append(self._construct_sequence(sequence))
-        print(parts)
-        return np.concatenate(parts)
+        if self.mode == Mode.TEXT:
+            encoded = b""
+            for byte in data:
+                block = bytes(self.rsc.encode(bytes([byte])))
+                encoded += block
+        else:
+            encoded = bytes(self.rsc_block.encode(data))
+
+        sequence = []
+        for bit in self._to_bits(encoded):
+            freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
+            sequence.append((freq, self.speed.value))
+            sequence.append((self.FREQ_SYNC, self.speed.value))
+        return self._construct_sequence(sequence)
 
     def padding(self):
         """

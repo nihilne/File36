@@ -6,7 +6,8 @@ from argparse import Namespace
 
 from file36.config import DEFAULT_SPEED, DEFAULT_VOLUME
 from file36.core.enums import Mode, Speed
-from file36.core.player import Player
+from file36.core.sender import Sender
+from file36.core.receiver import Receiver
 from file36.core.types import speed_type, volume_type
 
 root = logging.getLogger()
@@ -32,45 +33,42 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # PLAY PARSER & OPTIONS
-    play_parser = subparsers.add_parser("play", help="Encode and play audio.")
+    send_parser = subparsers.add_parser("play", help="Encode and play audio.")
 
-    play_parser.add_argument(
+    send_parser.add_argument(
         "--save", action="store_true", help="Export the audio as a WAV file."
     )
-    play_parser.add_argument(
+    send_parser.add_argument(
         "--visualize", action="store_true", help="Show a spectrogram."
     )
-    play_parser.add_argument(
+    send_parser.add_argument(
         "-v",
         "--volume",
         type=volume_type,
         default=DEFAULT_VOLUME,
     )
-    play_parser.add_argument(
+    send_parser.add_argument(
         "--speed",
         type=speed_type,
         default=DEFAULT_SPEED,
         choices=list(Speed),
     )
 
-    # PLAY MODES
-    play_mode = play_parser.add_mutually_exclusive_group(required=True)
+    # SEND MODES
+    send_mode = send_parser.add_mutually_exclusive_group(required=True)
 
-    play_mode.add_argument(
+    send_mode.add_argument(
         "-d",
         "--demo",
         action="store_true",
         help="Encode and play demo data.",
     )
 
-    play_mode.add_argument(
+    send_mode.add_argument(
         "-t", "--text", metavar="TEXT", help="Encode and play a text string."
     )
-    play_mode.add_argument(
+    send_mode.add_argument(
         "-f", "--file", metavar="PATH", help="Encode and play a file."
-    )
-    play_mode.add_argument(
-        "-b", "--bytes", metavar="HEX", help="Encode and play raw bytes (hex)."
     )
 
     # RECEIVE PARSER & OPTIONS
@@ -85,37 +83,33 @@ def main():
     args = parser.parse_args()
 
     if args.command == "play":
-        mode_play(args)
+        mode_send(args)
     elif args.command == "receive":
         mode_receive(args)
 
 
-def mode_play(options: Namespace):
+def mode_send(options: Namespace):
     if options.demo:
-        player = Player(Mode.TEXT, "TEST_DATA 123!@", options.speed, options.volume)
+        send = Sender(Mode.TEXT, "TEST_DATA 123!@", options.speed, options.volume)
 
     if options.text:
-        player = Player(Mode.TEXT, options.text, options.speed, options.volume)
+        send = Sender(Mode.TEXT, options.text, options.speed, options.volume)
 
     if options.file:
-        player = Player(Mode.FILE, options.file, options.speed, options.volume)
-
-    if options.bytes:
-        player = Player(
-            Mode.RAW, bytes.fromhex(options.bytes), options.speed, options.volume
-        )
+        send = Sender(Mode.FILE, options.file, options.speed, options.volume)
 
     if options.visualize:
-        play_thread = threading.Thread(target=player.play)
-        play_thread.start()
-        player.visualize()
-        play_thread.join()
+        send_thread = threading.Thread(target=send.play)
+        send_thread.start()
+        send.visualize()
+        send_thread.join()
     else:
-        player.play()
+        send.play()
 
     if options.save:
-        player.export_wav("./output.wav")
+        send.export_wav("./output.wav")
 
 
 def mode_receive(options: Namespace):
     raise RuntimeError("Not implemented yet.")
+    # Receiver(DEFAULT_SPEED).receive()
