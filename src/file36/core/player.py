@@ -8,10 +8,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
+from reedsolo import RSCodec
 
 from file36.core.enums import Mode, Speed
 
 matplotlib.use("Qt5Agg")
+
+rsc = RSCodec()
 
 
 class Player:
@@ -42,12 +45,8 @@ class Player:
         self.volume = volume / 100
         self.mode = mode
 
-    def _read_bytes(self):
-        """Reads raw bytes of the object's file_path property"""
-        with self.file_path.open("rb") as file:
-            return file.read()
-
-    def _to_bits(self, data: bytes):
+    @staticmethod
+    def _to_bits(data: bytes) -> list[int]:
         """Converts bytes to a list of bits (MSB)"""
         bits = []
         for byte in data:
@@ -55,14 +54,19 @@ class Player:
                 bits.append((byte >> i) & 1)
         return bits
 
-    def tone(self, freq: int, duration: int):
+    def _read_bytes(self) -> bytes:
+        """Reads a file as bytes from object's `file_path` property"""
+        with self.file_path.open("rb") as file:
+            return file.read()
+
+    def _generate_tone(self, freq: int, duration: int):
         """Generates a tone given a frequency and a duration in milliseconds."""
         d = duration / 1000
         t = np.linspace(0, d, int(self.SAMPLE_RATE * d), False)
         sine = np.sin(2 * np.pi * freq * t)
         return sine.astype(np.float32) * self.volume
 
-    def sequence(self, sequence: list[tuple[int, int]]):
+    def _construct_sequence(self, sequence: list[tuple[int, int]]):
         """
         Generates a sequence of tones given a list of
         tones containing the frequency and duration
@@ -70,9 +74,20 @@ class Player:
         """
         parts = []
         for freq, duration in sequence:
-            parts.append(self.tone(freq, duration))
+            parts.append(self._generate_tone(freq, duration))
 
         return np.concatenate(parts)
+
+    def encode(self, data: bytes):
+        """Encodes bytes to a tone sequence."""
+        bits = self._to_bits(data)
+        sequence = []
+        for bit in bits:
+            freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
+            sequence.append((freq, self.speed.value))
+            sequence.append((self.FREQ_SYNC, self.speed.value))
+
+        return self._construct_sequence(sequence)
 
     def padding(self):
         """
@@ -83,7 +98,7 @@ class Player:
             (600, 150),
             (700, 150),
         ]
-        return self.sequence(tones)
+        return self._construct_sequence(tones)
 
     def header(self):
         """Returns a sequence that acts as the transmission start identifier"""
@@ -92,7 +107,7 @@ class Player:
             (1200, 10),
             (1900, 300),
         ]
-        return self.sequence(tones)
+        return self._construct_sequence(tones)
 
     def mode_header(self):
         """Returns a sequence that signifies the mode of encoded audio being transmitted"""
@@ -110,22 +125,11 @@ class Player:
             (500, 150),
             freq,
         ]
-        return self.sequence(tones)
+        return self._construct_sequence(tones)
 
     def eot(self):
-        """Returns an End Of Transmission (EOT) byte"""
+        """Returns an End Of Transmission (EOT) byte."""
         return self.encode(self.EOT)
-
-    def encode(self, data: bytes):
-        """Encodes bytes to a tone sequence"""
-        bits = self._to_bits(data)
-        sequence = []
-        for bit in bits:
-            freq = self.FREQ_ONE if bit == 1 else self.FREQ_ZERO
-            sequence.append((freq, self.speed.value))
-            sequence.append((self.FREQ_SYNC, self.speed.value))
-
-        return self.sequence(sequence)
 
     def build(self):
         """Builds and returns the full transmission waveform."""
